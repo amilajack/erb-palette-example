@@ -12,8 +12,31 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import {
+  init,
+  cpu,
+  events,
+  profiler,
+  measure,
+  tag,
+} from '@palette.dev/electron/main';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import { labelFn, resolveHtmlPath } from './util';
+
+/**
+ * Palette main process setup
+ */
+init({
+  key: 'YOUR_API_KEY',
+  plugins: [cpu(), events(), profiler(), measure()],
+});
+tag('userId', 'user-123');
+tag('sessionId', 'session-123');
+
+// Profile the CPU and create a label named "electron-when-ready"
+labelFn(app.whenReady, () => cpu.start({ samplingInterval: 500 }), cpu.stop, {
+  name: 'electron.when-ready',
+});
 
 export default class AppUpdater {
   constructor() {
@@ -71,8 +94,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 300,
+    height: 400,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       nodeIntegration: true,
