@@ -44,7 +44,7 @@ const configuration: webpack.Configuration = {
 
   mode: 'development',
 
-  target: ['web', 'electron-renderer'],
+  target: 'electron-renderer',
 
   entry: [
     `webpack-dev-server/client?http://localhost:${port}/dist`,
@@ -56,9 +56,6 @@ const configuration: webpack.Configuration = {
     path: webpackPaths.distRendererPath,
     publicPath: '/',
     filename: 'renderer.dev.js',
-    library: {
-      type: 'umd',
-    },
   },
 
   module: {
@@ -163,21 +160,12 @@ const configuration: webpack.Configuration = {
       verbose: true,
     },
     setupMiddlewares(middlewares) {
-      console.log('Starting preload.js builder...');
-      const preloadProcess = spawn('npm', ['run', 'start:preload'], {
-        shell: true,
-        stdio: 'inherit',
-      })
-        .on('close', (code: number) => process.exit(code!))
-        .on('error', (spawnError) => console.error(spawnError));
-
       console.log('Starting Main Process...');
       spawn('npm', ['run', 'start:main'], {
         shell: true,
         stdio: 'inherit',
       })
         .on('close', (code: number) => {
-          preloadProcess.kill();
           process.exit(code!);
         })
         .on('error', (spawnError) => console.error(spawnError));
